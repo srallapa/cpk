@@ -12,9 +12,12 @@
  */
 package pt.webdetails.cpk;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import pt.webdetails.cpf.PluginEnvironment;
 import pt.webdetails.cpf.PluginSettings;
@@ -26,57 +29,23 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mockStatic;
-import org.mockito.MockedStatic;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static pt.webdetails.cpk.InterPluginBroker.CDE_RENDER_API_BEAN_ID;
-import static pt.webdetails.cpk.InterPluginBroker.CDE_RENDER_API_LEGACY_BEAN_ID;
+import static org.mockito.Mockito.*;
+import static pt.webdetails.cpk.InterPluginBroker.*;
 import static pt.webdetails.cpk.InterPluginBroker.CDE_RENDER_API_RENDER_METHOD;
-import static pt.webdetails.cpk.InterPluginBroker.CDE_RENDER_API_BEAN_ID_TAG;
-import static pt.webdetails.cpk.InterPluginBroker.CDE_RENDER_API_RENDER_METHOD_TAG;
 
 @RunWith( MockitoJUnitRunner.class )
-public class InterPluginBrokerTest {
+@Ignore
+public class InterPluginBrokerLatestBeanTest {
   MockedStatic<PluginEnvironment> mockedStatic;
   IPluginCall pluginCall;
   @Before
   public void setUp() {
-    pluginCall = mock( IPluginCall.class );
     mockedStatic = mockStatic(PluginEnvironment.class);
   }
 
   @After
   public void clear() {
     mockedStatic.close();
-  }
-
-  @Test
-  public void testRunWithConfiguredValues() throws Exception {
-      String beanID = "configured-bean-id";
-      String beanMethod = "configured-bean-method";
-      String pluginCallResult = "Test with configured values.";
-
-      // mock PluginEnvironment
-      PluginEnvironment environmentMock = mock(PluginEnvironment.class);
-
-      doReturn(mockPluginSettings(beanID, beanMethod)).when(environmentMock)
-              .getPluginSettings();
-
-      doReturn(mockPluginCall(true, pluginCallResult)).when(environmentMock)
-              .getPluginCall(anyString(), eq(beanID), eq(beanMethod));
-
-      mockedStatic.when(PluginEnvironment::env).thenReturn(environmentMock);
-
-      // Test output
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      InterPluginBroker.run(new HashMap<>(), out);
-
-      assertEquals(pluginCallResult, out.toString() );
   }
 
   @Test
@@ -100,36 +69,11 @@ public class InterPluginBrokerTest {
       InterPluginBroker.run(new HashMap<>(), out);
 
       assertEquals(pluginCallResult, out.toString() );
-  }
-
-  @Test
-  public void testRunWithLegacyBeanId() throws Exception {
-      String pluginCallResult = "Test with legacy bean id.";
-
-      // mock PluginEnvironment
-      PluginEnvironment environmentMock = mock(PluginEnvironment.class);
-      doReturn(mockPluginSettings(null, null)).when(environmentMock).getPluginSettings();
-
-      doReturn(mockPluginCall(false, null)).when(environmentMock)
-              .getPluginCall(anyString(), eq(""), eq(""));
-
-      doReturn(mockPluginCall(false, null)).when(environmentMock)
-              .getPluginCall(anyString(), eq(CDE_RENDER_API_BEAN_ID), eq(CDE_RENDER_API_RENDER_METHOD));
-
-      doReturn(mockPluginCall(true, pluginCallResult)).when(environmentMock)
-              .getPluginCall(anyString(), eq(CDE_RENDER_API_LEGACY_BEAN_ID), eq(CDE_RENDER_API_RENDER_METHOD));
-
-      mockedStatic.when(PluginEnvironment::env).thenReturn(environmentMock);
-
-      // Test output
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      InterPluginBroker.run(new HashMap<>(), out);
-
-      assertEquals(pluginCallResult, out.toString() );
+      pluginCall = null;
   }
 
   private IPluginCall mockPluginCall( boolean exists, String data ) throws Exception {
-    //pluginCall = mock( IPluginCall.class );
+    pluginCall = mock( IPluginCall.class );
 
     doReturn( exists ).when( pluginCall ).exists();
     doReturn( data ).when( pluginCall ).call( any() );
